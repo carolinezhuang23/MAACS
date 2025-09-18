@@ -6,7 +6,7 @@ output: html_document
 
 ## Name
 
-Please enter your name here.
+Caroline Zhuang
 
 ### Setup
 
@@ -15,7 +15,11 @@ Read in the data with `read_csv()` and store the data as an R object named `data
 
 ```{r}
 ## Load the data and any necessary packages here.
-
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+dataset <- read.csv('maacs.csv.gz')
+dataset
 ```
 
 ## Part 1
@@ -32,7 +36,26 @@ NOTE: For this part, do not use any plots.
 
 ```{r}
 ## Write your function here
+are_fev1_higher_older <- function(dataset){
+  x <- dataset$age
+  y <- dataset$fev1
+  mod <- lm(y ~ x)
+  cf <- coef(mod)
+  
+  if(cf[2] > 0){
+    result <- TRUE
+  }
+  else{
+    result <- FALSE
+  }
+  
+  return (result)
+}
+```
 
+```{r}
+answer_q1 <- are_fev1_higher_older(dataset)
+answer_q1
 ```
 
 
@@ -44,13 +67,19 @@ How much does FEV1 change for a 1-year increase in the child's age?
 
 ```{r}
 ## Add your code here
-
+x <- dataset$age
+y <- dataset$fev1
+mod <- lm(y ~ x)
+cf <- coef(mod)
+cf[1]
+cf[2]
 ```
 
 
 Write your data analysis statement interpreting the regression model here:
 
-
+When the ages of the subjects happen to differ by 1 year, the difference in FEV1
+changes by around 0.17 liters.
 
 ## Part 3
 
