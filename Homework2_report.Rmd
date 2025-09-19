@@ -36,20 +36,9 @@ NOTE: For this part, do not use any plots.
 
 ```{r}
 ## Write your function here
-are_fev1_higher_older <- function(dataset){
-  x <- dataset$age
-  y <- dataset$fev1
-  mod <- lm(y ~ x)
-  cf <- coef(mod)
-  
-  if(cf[2] > 0){
-    result <- TRUE
-  }
-  else{
-    result <- FALSE
-  }
-  
-  return (result)
+are_fev1_higher_older <- function(dataset) {
+  cor_val <- cor(dataset$age, dataset$fev1, use = "complete.obs")
+  return(cor_val > 0)
 }
 ```
 
@@ -78,8 +67,10 @@ cf[2]
 
 Write your data analysis statement interpreting the regression model here:
 
-When the ages of the subjects happen to differ by 1 year, the difference in FEV1
-changes by around 0.17 liters.
+When the ages of the subjects happen to differ by 1 year, there is an increase 
+of FEV1 by around 0.17 liters. When the age of the subjects is 0, the FEV1 value
+is -0.0012 liters, which both are impossible values, so the intercept does not 
+provide any context in this scenario.
 
 ## Part 3
 
@@ -93,17 +84,39 @@ NOTE:
 
 ```{r}
 ## Add your code here
+# defining the subgroups 
+median_age <- median(dataset$age)
+young_children <- subset(dataset, age <= median_age)
+older_children <- subset(dataset, age > median_age)
 
+# statement 1 
+mean_young <- mean(young_children$fev1, na.rm = TRUE)
+mean_old <- mean(older_children$fev1, na.rm = TRUE)
+
+# statement 2
+dataset$group <- ifelse(dataset$age <= median_age, "Young", "Old")
+dist_plot <- ggplot(dataset, aes(group, fev1)) +
+  geom_boxplot() 
+dist_plot
+
+# statement 3 
+hist_plot <- ggplot(dataset, aes(fev1)) +
+  geom_histogram(bins = 20) +
+  facet_wrap(~group, ncol = 1)
+hist_plot
 ```
 
 
 Write the three supporting premise statements here:
 
-1. 
+1. The mean FEV1 among older children is higher than the mean FEV1 value in 
+younger children.
 
-2. 
+2. The median FEV1 among older children is higher than the median FEV1 value in
+younger children, as shown by the boxplot. 
 
-3. 
+3. The distribution of FEV1 values shifts higher for older children compared to
+younger children, as shown in the histogram.
 
 
 ## Part 4
@@ -119,24 +132,99 @@ For statements involving plots, instead of returning `TRUE` or `FALSE`, you func
 
 ```{r}
 ## Function for supporting premise statement 1
+mean_higher <- function(dataset){
+  # defining the subgroups 
+  median_age <- median(dataset$age)
+  young_children <- subset(dataset, age <= median_age)
+  older_children <- subset(dataset, age > median_age)
+  
+  # statement 1 
+  mean_young <- mean(young_children$fev1, na.rm = TRUE)
+  mean_old <- mean(older_children$fev1, na.rm = TRUE)
+  
+  return(mean_old > mean_young)
+}
 
+mean_higher(dataset)
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 2
+boxplot_groups <- function(dataset){
+  # defining groups 
+  median_age <- median(dataset$age)
+  dataset$group <- ifelse(dataset$age <= median_age, "Young", "Old")
+  
+  # true data
+  true_dist_plot <- ggplot(dataset, aes(group, fev1)) +
+    geom_boxplot() +
+    labs(title = "True: Median FEV1 By Group",
+         x = "Group", y = "FEV1")
+  
+  # simulated data
+  set.seed(123)
+  n <- 50  # number per group
+  young_sim <- rnorm(n, mean = 2.0, sd = 0.4)   # lower center
+  old_sim   <- rnorm(n, mean = 3.0, sd = 0.4)   # higher center
+  
+  sim_data <- tibble(
+    group = rep(c("Young", "Old"), each = n),
+    fev1  = c(young_sim, old_sim)
+  )
+  
+  simulated_plot <- ggplot(sim_data, aes(x = group, y = fev1)) +
+    geom_boxplot() +
+    labs(title = "Hypothetical: Median Higher in Older",
+         x = "Group", y = "FEV1")
+  
+  return(list(true_dist_plot, simulated_plot))
+}
 
+box_plots <- boxplot_groups(dataset)
+box_plots
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 3
+hist_groups <- function(dataset){
+  # defining groups 
+  median_age <- median(dataset$age)
+  dataset$group <- ifelse(dataset$age <= median_age, "Young", "Old")
+  
+  # true data
+  true_hist_plot <- ggplot(dataset, aes(fev1)) +
+    geom_histogram(bins = 20) +
+    facet_wrap(~group, ncol = 1) +
+    labs(title = "True Distribution of FEV1 by Group", 
+         x = "Group", y = "FEV1")
+  
+  # simulated data
+  set.seed(123)
+  n <- 50  # number per group
+  young_sim <- rnorm(n, mean = 2.0, sd = 0.4)   # lower center
+  old_sim   <- rnorm(n, mean = 3.0, sd = 0.4)   # higher center
+  
+  sim_data <- tibble(
+    group = rep(c("Young", "Old"), each = n),
+    fev1  = c(young_sim, old_sim)
+  )
+  
+  simulated_plot <- ggplot(sim_data, aes(fev1)) +
+    geom_histogram(bins = 20) +
+    facet_wrap(~group, ncol = 1) +
+    labs(title = "Hypothetical: Shifted Distribution in Older",
+         x = "Group", y = "FEV1")
+    
+  return(list(true_hist_plot, simulated_plot))
+}
 
+hist_plots <- hist_groups(dataset)
+hist_plots
 ```
 
 Execute each of your function and show that the produce the expected output.
-
-
 
 
 ## Part 5
