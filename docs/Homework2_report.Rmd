@@ -13,13 +13,12 @@ Caroline Zhuang
 Read in the data with `read_csv()` and store the data as an R object named `dataset`. Check the data to make sure all of the expected observations and variables are there.
 
 
-```{r}
+```{r, echo = FALSE}
 ## Load the data and any necessary packages here.
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 dataset <- read.csv('maacs.csv.gz')
-dataset
 ```
 
 ## Part 1
